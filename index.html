@@ -4,31 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>New Life - Pro</title>
+    <title>New Life - Dark Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --success: #10b981; }
-        body { font-family: -apple-system, system-ui; background: #f8fafc; margin: 0; padding: 15px; color: #1e293b; user-select: none; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6; --success: #10b981; --accent: #ff4b2b; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 15px; color: var(--text); user-select: none; text-align: right; }
         
-        /* כפתור טיימר בפינה */
-        .timer-icon { position: absolute; top: 25px; left: 20px; font-size: 28px; cursor: pointer; z-index: 100; background: white; padding: 8px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .timer-icon { position: absolute; top: 25px; left: 20px; font-size: 24px; cursor: pointer; z-index: 100; background: var(--card); padding: 10px; border-radius: 50%; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
-        .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; border: 1px solid #f1f5f9; position: relative; }
-        .date-display { font-size: 14px; color: #64748b; margin-bottom: 5px; font-weight: 600; }
-        .streak-num { font-size: 55px; font-weight: 900; color: #ff4b2b; margin: 5px 0; line-height: 1; }
-        .progress-bg { background: #e2e8f0; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; transition: width 0.5s ease; width: 0%; }
-        
-        .task { background: white; padding: 16px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .task.done { background: #ecfdf5; border-color: #10b981; }
-        .task.done span { text-decoration: line-through; color: #065f46; opacity: 0.6; }
+        .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin-bottom: 15px; border: 1px solid #334155; position: relative; }
+        .date-display { font-size: 13px; color: #94a3b8; font-weight: 600; }
+        .streak-num { font-size: 55px; font-weight: 900; color: var(--accent); margin: 5px 0; text-shadow: 0 0 15px rgba(255, 75, 43, 0.3); }
+        .quote { font-style: italic; font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 40px; line-height: 1.4; }
 
-        /* מודאל טיימר */
-        #timerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-content { background: white; padding: 30px; border-radius: 30px; text-align: center; width: 80%; max-width: 300px; }
-        .timer-display { font-size: 48px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
-        .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 15px; margin: 5px; font-weight: bold; width: 100%; font-size: 16px; }
-        .close-btn { background: #eee; color: #333; margin-top: 10px; }
+        .progress-bg { background: #334155; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+        .progress-fill { background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; transition: width 0.5s ease; width: 0%; }
+        
+        .task { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; transition: 0.3s; min-height: 45px; }
+        .task.done { background: rgba(16, 185, 129, 0.08); border-color: var(--success); }
+        .task.done span { text-decoration: line-through; color: var(--success); opacity: 0.6; }
+
+        .play-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; margin-left: 12px; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        .play-btn.playing { background: var(--accent); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        #timerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #334155; }
+        .timer-display { font-size: 60px; font-weight: bold; margin: 20px 0; color: var(--text); font-variant-numeric: tabular-nums; }
+        .modal-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 18px; margin: 8px 0; font-weight: bold; width: 100%; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -37,81 +41,107 @@
 
     <div class="card">
         <div id="currentDate" class="date-display"></div>
-        <p style="margin:0; font-size: 14px; color:#64748b;">סטריק נוכחי</p>
+        <p style="margin:0; font-size: 11px; color:#64748b;">סטריק נוכחי</p>
         <p class="streak-num" id="streakDisplay">0</p>
+        <div id="dailyQuote" class="quote"></div>
         <div class="progress-bg"><div id="progressFill" class="progress-fill"></div></div>
-        <div id="percentLabel" style="font-size:12px; margin-top:5px; font-weight:bold;">0% מהאתגר</div>
+        <div id="percentLabel" style="font-size:11px; margin-top:8px; font-weight:bold; color: #94a3b8;"></div>
     </div>
 
     <div id="taskList"></div>
 
+    <audio id="meditationAudio" src="meditation.mp3.mp3" preload="auto"></audio>
+
     <div id="timerModal">
         <div class="modal-content">
-            <h3 id="timerTitle">טיימר</h3>
             <div id="timerDisplay" class="timer-display">00:00</div>
-            <div id="timerOptions">
-                <button class="modal-btn" onclick="startTimer(120)">2 דקות (פלאנק)</button>
-                <button class="modal-btn" onclick="startTimer(1200)">20 דקות (אימון)</button>
+            <div id="timerOptions" style="display: flex; flex-direction: column;">
+                <button class="modal-btn" onclick="startTimer(120)">2 דק' פלאנק</button>
+                <button class="modal-btn" onclick="startTimer(1200)">20 דק' אימון</button>
             </div>
-            <button id="stopBtn" class="modal-btn" style="display:none; background:#ef4444;" onclick="stopTimer()">עצור</button>
-            <button class="modal-btn close-btn" onclick="closeTimer()">סגור</button>
+            <button id="stopBtn" class="modal-btn" style="display:none; background:var(--accent);" onclick="stopTimer()">עצור</button>
+            <button class="modal-btn" style="background:#334155; margin-top:10px;" onclick="closeTimer()">סגור</button>
         </div>
     </div>
 
     <script>
         const START_DATE = new Date("2026-03-05");
         const TOTAL_DAYS = 75;
+        const quotes = [
+            "המשמעת היא החופש.", "אל תפסיק כשקשה, תפסיק כשסיימת.", "תהיה חזק מהתירוץ הכי חזק שלך.",
+            "הצלחה היא סך של מאמצים קטנים יום אחרי יום.", "הכאב של היום הוא הכוח של מחר.",
+            "מי שרוצה - מוצא דרך. מי שלא - מוצא תירוץ."
+        ];
+        
         const dailyBasics = ["🧘 מדיטציה", "❄️ מקלחת קרה", "✍️ כתיבה 5+ דק'", "📖 קריאה 5+ דק'", "Plank ⏱️"];
-        const trainingSchedule = {
-            0: "💪 כוח: פלג גוף עליון (20 דק')",
-            1: "💪 כוח: חיזוקים + ליבה (20 דק')",
-            2: "💪 כוח: פלג גוף תחתון (20 דק')",
-            3: "💪 כוח: פלג גוף עליון (20 דק')",
-            4: "💪 כוח: חיזוקים + ליבה (20 דק')",
-            5: "💪 כוח: חיזוקים מיוחדים (רגליים, כתפיים, ליבה)",
-            6: "🧘‍♂️ מתיחות איכותיות (20 דק')"
-        };
-        const runningSchedule = {
-            0: "🏃‍♂️ ריצה 45 דק' קלה", 1: "🏃‍♂️ ריצה שיטה נורווגית", 3: "🏃‍♂️ ריצה 45 דק' קלה", 4: "🏃‍♂️ ריצה ספרינטים"
-        };
+        const train = {0:"💪 פלג גוף עליון", 1:"💪 חיזוקים + ליבה", 2:"💪 פלג גוף תחת", 3:"💪 פלג גוף עליון", 4:"💪 חיזוקים + ליבה", 5:"💪 חיזוקים מיוחדים", 6:"🧘‍♂️ מתיחות 20 דק'"};
+        const runs = {0:"🏃‍♂️ ריצה 45 דק'", 1:"🏃‍♂️ נורווגית", 3:"🏃‍♂️ ריצה 45 דק'", 4:"🏃‍♂️ ספרינטים"};
 
         let streak = parseInt(localStorage.getItem('nl_streak')) || 0;
         let completedTasks = JSON.parse(localStorage.getItem('nl_completedTasks')) || [];
-        let timerInterval;
+        const audio = document.getElementById('meditationAudio');
 
         function init() {
             const today = new Date();
-            const todayStr = today.toLocaleDateString();
             document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+            const diffDays = Math.max(0, Math.ceil((today - START_DATE) / 86400000));
+            const p = Math.min(100, Math.round((diffDays/TOTAL_DAYS)*100));
+            document.getElementById('progressFill').style.width = p + "%";
+            document.getElementById('percentLabel').innerText = p + "% מהאתגר עבר";
+            document.getElementById('dailyQuote').innerText = `"${quotes[today.getDate() % quotes.length]}"`;
             
-            const diffDays = Math.ceil(Math.abs(today - START_DATE) / (1000 * 60 * 60 * 24));
-            const percent = Math.min(100, Math.round((diffDays / TOTAL_DAYS) * 100));
-            document.getElementById('progressFill').style.width = percent + "%";
-            document.getElementById('percentLabel').innerText = percent + "% מהאתגר עבר";
-
-            if (localStorage.getItem('nl_lastDate') !== todayStr) {
+            if (localStorage.getItem('nl_lastDate') !== today.toLocaleDateString()) {
                 completedTasks = [];
                 localStorage.setItem('nl_completedTasks', JSON.stringify([]));
-                localStorage.setItem('nl_lastDate', todayStr);
+                localStorage.setItem('nl_lastDate', today.toLocaleDateString());
             }
+
+            audio.onended = () => {
+                if (!completedTasks.includes("🧘 מדיטציה")) {
+                    toggle("🧘 מדיטציה");
+                    confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
+                }
+            };
             render();
         }
 
         function render() {
             const day = new Date().getDay();
-            let todayTasks = [...dailyBasics];
-            if (day !== 6) todayTasks.push("🧘‍♂️ מתיחות (10 דק')");
-            todayTasks.push(trainingSchedule[day]);
-            if (runningSchedule[day]) todayTasks.push(runningSchedule[day]);
+            let tasks = [...dailyBasics];
+            if (day !== 6) tasks.push("🧘‍♂️ מתיחות (10 דק')");
+            tasks.push(train[day]);
+            if (runs[day]) tasks.push(runs[day]);
 
             const list = document.getElementById('taskList');
-            list.innerHTML = todayTasks.map((t, i) => {
+            list.innerHTML = tasks.map(t => {
                 const isDone = completedTasks.includes(t);
-                return `<div class="task ${isDone ? 'done' : ''}" onclick="toggle('${t}')">
-                    <span>${t}</span><span>${isDone ? '✅' : '⬜'}</span>
+                const isMed = t.includes("מדיטציה");
+                return `
+                <div class="task ${isDone ? 'done' : ''}">
+                    <div style="display:flex; align-items:center; flex:1" onclick="toggle('${t}')">
+                        <span style="font-weight:500; font-size:17px;">${t}</span>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        ${isMed && !isDone ? `<button id="pBtn" class="play-btn" onclick="playMed(event)">▶</button>` : ''}
+                        <span onclick="toggle('${t}')" style="font-size:24px; cursor:pointer; margin-right:15px;">${isDone ? '✅' : '⬜'}</span>
+                    </div>
                 </div>`;
             }).join('');
             document.getElementById('streakDisplay').innerText = streak;
+        }
+
+        function playMed(e) {
+            e.stopPropagation();
+            const btn = document.getElementById('pBtn');
+            if (audio.paused) {
+                audio.play().catch(err => alert("יש ללחוץ שוב על Play (הגנת דפדפן)"));
+                btn.innerText = "⏸";
+                btn.classList.add('playing');
+            } else {
+                audio.pause();
+                btn.innerText = "▶";
+                btn.classList.remove('playing');
+            }
         }
 
         function toggle(name) {
@@ -126,45 +156,30 @@
         function checkWin() {
             const day = new Date().getDay();
             const todayStr = new Date().toLocaleDateString();
-            const required = dailyBasics.length + 1 + (day !== 6 ? 1 : 0) + (runningSchedule[day] ? 1 : 0);
-            if (completedTasks.length === required && localStorage.getItem('nl_win_' + todayStr) !== "y") {
+            const req = dailyBasics.length + 1 + (day !== 6 ? 1 : 0) + (runs[day] ? 1 : 0);
+            if (completedTasks.length === req && localStorage.getItem('nl_win_' + todayStr) !== "y") {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 streak++;
                 localStorage.setItem('nl_streak', streak);
                 localStorage.setItem('nl_win_' + todayStr, "y");
-                setTimeout(() => { render(); alert("יום אדיר! 🔥"); }, 500);
+                setTimeout(() => { render(); alert("יום מושלם! 🔥"); }, 500);
             }
         }
 
-        // לוגיקת טיימר
         function openTimer() { document.getElementById('timerModal').style.display = 'flex'; }
         function closeTimer() { stopTimer(); document.getElementById('timerModal').style.display = 'none'; }
-
-        function startTimer(seconds) {
+        function startTimer(s) {
             document.getElementById('timerOptions').style.display = 'none';
             document.getElementById('stopBtn').style.display = 'block';
-            let timeLeft = seconds;
-            
+            let timeLeft = s;
             timerInterval = setInterval(() => {
                 timeLeft--;
-                let mins = Math.floor(timeLeft / 60);
-                let secs = timeLeft % 60;
-                document.getElementById('timerDisplay').innerText = 
-                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    stopTimer();
-                    alert("הזמן נגמר! כל הכבוד 💪");
-                }
+                let m = Math.floor(timeLeft / 60), sc = timeLeft % 60;
+                document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`;
+                if (timeLeft <= 0) { stopTimer(); alert("הזמן נגמר!"); }
             }, 1000);
         }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            document.getElementById('timerDisplay').innerText = "00:00";
-            document.getElementById('timerOptions').style.display = 'block';
-            document.getElementById('stopBtn').style.display = 'none';
-        }
+        function stopTimer() { clearInterval(timerInterval); document.getElementById('timerOptions').style.display = 'flex'; document.getElementById('stopBtn').style.display = 'none'; document.getElementById('timerDisplay').innerText = "00:00"; }
 
         init();
     </script>

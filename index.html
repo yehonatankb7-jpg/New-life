@@ -4,169 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>New Life - Challenge</title>
+    <title>New Life - Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        :root { --primary: #2563eb; --success: #10b981; }
         body { font-family: -apple-system, system-ui; background: #f8fafc; margin: 0; padding: 15px; color: #1e293b; user-select: none; }
         
-        .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; border: 1px solid #f1f5f9; }
+        /* כפתור טיימר בפינה */
+        .timer-icon { position: absolute; top: 25px; left: 20px; font-size: 28px; cursor: pointer; z-index: 100; background: white; padding: 8px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; border: 1px solid #f1f5f9; position: relative; }
         .date-display { font-size: 14px; color: #64748b; margin-bottom: 5px; font-weight: 600; }
         .streak-num { font-size: 55px; font-weight: 900; color: #ff4b2b; margin: 5px 0; line-height: 1; }
-        
-        /* מד התקדמות האתגר */
-        .challenge-box { margin-top: 15px; text-align: right; }
-        .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
-        .progress-bg { background: #e2e8f0; height: 10px; border-radius: 10px; overflow: hidden; }
+        .progress-bg { background: #e2e8f0; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
         .progress-fill { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; transition: width 0.5s ease; width: 0%; }
-
-        /* רשימת משימות */
-        .task { background: white; padding: 16px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; }
+        
+        .task { background: white; padding: 16px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .task.done { background: #ecfdf5; border-color: #10b981; }
         .task.done span { text-decoration: line-through; color: #065f46; opacity: 0.6; }
-        
-        /* כפתור יום מנוחה */
-        .rest-btn { background: #f1f5f9; color: #475569; border: none; padding: 12px; border-radius: 15px; width: 100%; font-weight: bold; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; }
-        .rest-btn.active { background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; }
-        .rest-count { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+        /* מודאל טיימר */
+        #timerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-content { background: white; padding: 30px; border-radius: 30px; text-align: center; width: 80%; max-width: 300px; }
+        .timer-display { font-size: 48px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 15px; margin: 5px; font-weight: bold; width: 100%; font-size: 16px; }
+        .close-btn { background: #eee; color: #333; margin-top: 10px; }
     </style>
 </head>
 <body>
+
+    <div class="timer-icon" onclick="openTimer()">⏱️</div>
+
     <div class="card">
         <div id="currentDate" class="date-display"></div>
         <p style="margin:0; font-size: 14px; color:#64748b;">סטריק נוכחי</p>
         <p class="streak-num" id="streakDisplay">0</p>
-        
-        <div class="challenge-box">
-            <div class="progress-label">
-                <span>התקדמות האתגר (75 יום)</span>
-                <span id="percentLabel">0%</span>
-            </div>
-            <div class="progress-bg">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
-        </div>
+        <div class="progress-bg"><div id="progressFill" class="progress-fill"></div></div>
+        <div id="percentLabel" style="font-size:12px; margin-top:5px; font-weight:bold;">0% מהאתגר</div>
     </div>
 
     <div id="taskList"></div>
 
-    <button id="restBtn" class="rest-btn" onclick="takeRestDay()">
-        <span>🏖️ יום מנוחה (חולי / טיול)</span>
-    </button>
-    <div id="restInfo" class="rest-count" style="text-align: center;">נותרו לך 2 ימי מנוחה לשבוע זה</div>
+    <div id="timerModal">
+        <div class="modal-content">
+            <h3 id="timerTitle">טיימר</h3>
+            <div id="timerDisplay" class="timer-display">00:00</div>
+            <div id="timerOptions">
+                <button class="modal-btn" onclick="startTimer(120)">2 דקות (פלאנק)</button>
+                <button class="modal-btn" onclick="startTimer(1200)">20 דקות (אימון)</button>
+            </div>
+            <button id="stopBtn" class="modal-btn" style="display:none; background:#ef4444;" onclick="stopTimer()">עצור</button>
+            <button class="modal-btn close-btn" onclick="closeTimer()">סגור</button>
+        </div>
+    </div>
 
     <script>
         const START_DATE = new Date("2026-03-05");
-        const END_DATE = new Date("2026-05-19");
-        const TOTAL_CHALLENGE_DAYS = 75;
-
-        const dailyTasks = ["🧘 מדיטציה", "🧘‍♂️ מתיחות (10 דק')", "❄️ מקלחת קרה", "✍️ כתיבה 5+ דק'", "📖 קריאה 5+ דק')", "💪 אימון 20 דק'"];
-        const runs = { 0: "🏃‍♂️ ריצה 45 דק' קלה", 1: "🏃‍♂️ ריצה נורווגית", 3: "🏃‍♂️ ריצה 45 דק' קלה", 4: "🏃‍♂️ ריצה ספרינטים" };
+        const TOTAL_DAYS = 75;
+        const dailyBasics = ["🧘 מדיטציה", "❄️ מקלחת קרה", "✍️ כתיבה 5+ דק'", "📖 קריאה 5+ דק'", "Plank ⏱️"];
+        const trainingSchedule = {
+            0: "💪 כוח: פלג גוף עליון (20 דק')",
+            1: "💪 כוח: חיזוקים + ליבה (20 דק')",
+            2: "💪 כוח: פלג גוף תחתון (20 דק')",
+            3: "💪 כוח: פלג גוף עליון (20 דק')",
+            4: "💪 כוח: חיזוקים + ליבה (20 דק')",
+            5: "💪 כוח: חיזוקים מיוחדים (רגליים, כתפיים, ליבה)",
+            6: "🧘‍♂️ מתיחות איכותיות (20 דק')"
+        };
+        const runningSchedule = {
+            0: "🏃‍♂️ ריצה 45 דק' קלה", 1: "🏃‍♂️ ריצה שיטה נורווגית", 3: "🏃‍♂️ ריצה 45 דק' קלה", 4: "🏃‍♂️ ריצה ספרינטים"
+        };
 
         let streak = parseInt(localStorage.getItem('nl_streak')) || 0;
         let completedTasks = JSON.parse(localStorage.getItem('nl_completedTasks')) || [];
-        let restDaysThisWeek = JSON.parse(localStorage.getItem('nl_restDays')) || []; // מערך של תאריכים
-
-        const today = new Date();
-        const todayStr = today.toLocaleDateString();
+        let timerInterval;
 
         function init() {
-            // עדכון תאריך
-            document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const today = new Date();
+            const todayStr = today.toLocaleDateString();
+            document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            // בדיקת התקדמות האתגר
-            const diffTime = Math.abs(today - START_DATE);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const percent = Math.min(100, Math.round((diffDays / TOTAL_CHALLENGE_DAYS) * 100));
+            const diffDays = Math.ceil(Math.abs(today - START_DATE) / (1000 * 60 * 60 * 24));
+            const percent = Math.min(100, Math.round((diffDays / TOTAL_DAYS) * 100));
             document.getElementById('progressFill').style.width = percent + "%";
-            document.getElementById('percentLabel').innerText = percent + "%";
+            document.getElementById('percentLabel').innerText = percent + "% מהאתגר עבר";
 
-            // איפוס משימות אם יום חדש
-            const lastSavedDate = localStorage.getItem('nl_lastDate');
-            if (lastSavedDate !== todayStr) {
+            if (localStorage.getItem('nl_lastDate') !== todayStr) {
                 completedTasks = [];
                 localStorage.setItem('nl_completedTasks', JSON.stringify([]));
                 localStorage.setItem('nl_lastDate', todayStr);
             }
-
-            // ניקוי ימי מנוחה ישנים (לשמור רק את ה-7 ימים האחרונים)
-            restDaysThisWeek = restDaysThisWeek.filter(d => (today - new Date(d)) / (1000*60*60*24) < 7);
-            localStorage.setItem('nl_restDays', JSON.stringify(restDaysThisWeek));
-
-            updateRestButton();
             render();
         }
 
         function render() {
-            const day = today.getDay();
-            const todayTasks = [...dailyTasks];
-            if (runs[day]) todayTasks.push(runs[day]);
-            
-            const list = document.getElementById('taskList');
-            const isRestDay = restDaysThisWeek.includes(todayStr);
+            const day = new Date().getDay();
+            let todayTasks = [...dailyBasics];
+            if (day !== 6) todayTasks.push("🧘‍♂️ מתיחות (10 דק')");
+            todayTasks.push(trainingSchedule[day]);
+            if (runningSchedule[day]) todayTasks.push(runningSchedule[day]);
 
-            if (isRestDay) {
-                list.innerHTML = `<div class="card" style="color: #c2410c;">🏖️ היום הוא יום מנוחה. הסטריק שלך מוגן!</div>`;
-            } else {
-                list.innerHTML = todayTasks.map((t, i) => {
-                    const isDone = completedTasks.includes(t);
-                    return `
-                    <div class="task ${isDone ? 'done' : ''}" onclick="toggle('${t}', ${i})">
-                        <span>${t}</span>
-                        <span>${isDone ? '✅' : '⬜'}</span>
-                    </div>`;
-                }).join('');
-            }
+            const list = document.getElementById('taskList');
+            list.innerHTML = todayTasks.map((t, i) => {
+                const isDone = completedTasks.includes(t);
+                return `<div class="task ${isDone ? 'done' : ''}" onclick="toggle('${t}')">
+                    <span>${t}</span><span>${isDone ? '✅' : '⬜'}</span>
+                </div>`;
+            }).join('');
             document.getElementById('streakDisplay').innerText = streak;
         }
 
-        function toggle(taskName, i) {
-            const index = completedTasks.indexOf(taskName);
-            if (index === -1) completedTasks.push(taskName);
-            else completedTasks.splice(index, 1);
-            
+        function toggle(name) {
+            const idx = completedTasks.indexOf(name);
+            if (idx === -1) completedTasks.push(name);
+            else completedTasks.splice(idx, 1);
             localStorage.setItem('nl_completedTasks', JSON.stringify(completedTasks));
             render();
-            checkCompletion();
+            checkWin();
         }
 
-        function checkCompletion() {
-            const day = today.getDay();
-            const totalNeeded = dailyTasks.length + (runs[day] ? 1 : 0);
-            const alreadyAwarded = localStorage.getItem('nl_awarded_' + todayStr);
-
-            if (completedTasks.length === totalNeeded && !alreadyAwarded) {
-                confetti({ perspective: 500, spread: 360, particleCount: 150, origin: { y: 0.6 } });
+        function checkWin() {
+            const day = new Date().getDay();
+            const todayStr = new Date().toLocaleDateString();
+            const required = dailyBasics.length + 1 + (day !== 6 ? 1 : 0) + (runningSchedule[day] ? 1 : 0);
+            if (completedTasks.length === required && localStorage.getItem('nl_win_' + todayStr) !== "y") {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 streak++;
                 localStorage.setItem('nl_streak', streak);
-                localStorage.setItem('nl_awarded_' + todayStr, "true");
-                document.getElementById('streakDisplay').innerText = streak;
-                setTimeout(() => alert("בום! יום מושלם! 🔥"), 500);
+                localStorage.setItem('nl_win_' + todayStr, "y");
+                setTimeout(() => { render(); alert("יום אדיר! 🔥"); }, 500);
             }
         }
 
-        function takeRestDay() {
-            if (restDaysThisWeek.includes(todayStr)) return;
-            if (restDaysThisWeek.length >= 2) {
-                alert("ניצלת כבר 2 ימי מנוחה ב-7 הימים האחרונים. הגיע הזמן לעבוד! 💪");
-                return;
-            }
-            if (confirm("להשתמש ביום מנוחה? הסטריק לא יישבר אבל גם לא יעלה היום.")) {
-                restDaysThisWeek.push(todayStr);
-                localStorage.setItem('nl_restDays', JSON.stringify(restDaysThisWeek));
-                localStorage.setItem('nl_awarded_' + todayStr, "rest");
-                updateRestButton();
-                render();
-            }
+        // לוגיקת טיימר
+        function openTimer() { document.getElementById('timerModal').style.display = 'flex'; }
+        function closeTimer() { stopTimer(); document.getElementById('timerModal').style.display = 'none'; }
+
+        function startTimer(seconds) {
+            document.getElementById('timerOptions').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+            let timeLeft = seconds;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                let mins = Math.floor(timeLeft / 60);
+                let secs = timeLeft % 60;
+                document.getElementById('timerDisplay').innerText = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    alert("הזמן נגמר! כל הכבוד 💪");
+                }
+            }, 1000);
         }
 
-        function updateRestButton() {
-            const count = 2 - restDaysThisWeek.length;
-            document.getElementById('restInfo').innerText = `נותרו לך ${count} ימי מנוחה ל-7 הימים הקרובים`;
-            if (restDaysThisWeek.includes(todayStr)) {
-                document.getElementById('restBtn').classList.add('active');
-                document.getElementById('restBtn').innerText = "✅ יום מנוחה הופעל";
-            }
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timerDisplay').innerText = "00:00";
+            document.getElementById('timerOptions').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
         }
 
         init();

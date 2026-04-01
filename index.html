@@ -4,123 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>New Life - Dark Pro</title>
+    <title>New Life - Elite Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6; --success: #10b981; --accent: #ff4b2b; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6; --success: #10b981; --accent: #ff4b2b; --warning: #f59e0b; }
         body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 15px; color: var(--text); user-select: none; text-align: right; }
         
-        .timer-icon { position: absolute; top: 25px; left: 20px; font-size: 24px; cursor: pointer; z-index: 100; background: var(--card); padding: 10px; border-radius: 50%; border: 1px solid #334155; }
-        
+        .header-btns { position: absolute; top: 25px; left: 20px; display: flex; gap: 10px; z-index: 100; }
+        .icon-btn { background: var(--card); padding: 10px; border-radius: 50%; border: 1px solid #334155; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
         .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin-bottom: 15px; border: 1px solid #334155; position: relative; }
         .date-display { font-size: 13px; color: #94a3b8; font-weight: 600; }
         .streak-num { font-size: 55px; font-weight: 900; color: var(--accent); margin: 5px 0; }
-        .quote { font-style: italic; font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 40px; }
 
         .progress-bg { background: #334155; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 15px; }
         .progress-fill { background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; transition: width 0.5s ease; width: 0%; }
         
-        /* עיצוב המשימה */
-        .task { 
-            background: var(--card); 
-            padding: 18px; 
-            border-radius: 20px; 
-            margin-bottom: 12px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border: 1px solid #334155; 
-            cursor: pointer; 
-            -webkit-tap-highlight-color: transparent; /* מונע ריבוע כחול בלחיצה באייפון */
-        }
+        .task { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; transition: 0.2s; cursor: pointer; }
         .task.done { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
         .task.done span { text-decoration: line-through; color: var(--success); opacity: 0.6; }
 
-        .play-btn { 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 16px; 
-            margin-left: 15px;
-            z-index: 5;
-        }
-        .play-btn.playing { background: var(--accent); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* Arena Style */
+        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .arena-timer { font-size: 60px; font-weight: bold; color: var(--accent); text-align: center; margin: 40px 0 10px; font-variant-numeric: tabular-nums; }
+        .sets-counter { font-size: 24px; text-align: center; margin-bottom: 30px; color: var(--primary); }
+        .arena-grid { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .exercise-btn { width: 100%; max-width: 300px; background: #334155; border: 2px solid #475569; padding: 25px; border-radius: 20px; color: white; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; position: relative; }
+        .exercise-btn.complete { background: var(--success); border-color: #059669; }
+        .exercise-btn input { position: absolute; right: 15px; width: 50px; background: rgba(0,0,0,0.3); border: none; color: white; text-align: center; border-radius: 5px; font-size: 18px; }
 
-        #timerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #334155; }
-        .timer-display { font-size: 60px; font-weight: bold; margin: 20px 0; color: var(--text); }
-        .modal-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 18px; margin: 8px 0; font-weight: bold; width: 100%; font-size: 18px; }
+        /* Calendar Style */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; font-weight: bold; border: 1px solid #334155; }
+        .day-perfect { border: 2px solid var(--success); color: var(--success); }
+        .day-partial { border: 2px solid var(--warning); color: var(--warning); }
+        .day-failed { border: 2px solid var(--accent); color: var(--accent); }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .play-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-left: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="timer-icon" onclick="openTimer()">⏱️</div>
+    <div class="header-btns">
+        <div class="icon-btn" onclick="openCalendar()">📅</div>
+        <div class="icon-btn" onclick="openTimer()">⏱️</div>
+    </div>
 
     <div class="card">
         <div id="currentDate" class="date-display"></div>
         <p style="margin:0; font-size: 11px; color:#64748b;">סטריק נוכחי</p>
         <p class="streak-num" id="streakDisplay">0</p>
-        <div id="dailyQuote" class="quote"></div>
         <div class="progress-bg"><div id="progressFill" class="progress-fill"></div></div>
-        <div id="percentLabel" style="font-size:11px; margin-top:8px; font-weight:bold; color: #94a3b8;"></div>
     </div>
 
     <div id="taskList"></div>
 
-    <audio id="meditationAudio" src="meditation.mp3.mp3" preload="auto"></audio>
+    <div id="strengthArena" class="full-modal">
+        <div class="arena-timer" id="arenaTimer">20:00</div>
+        <div class="sets-counter">סטים שבוצעו: <span id="currentSets">0</span> <br> <small id="prevBest" style="color:#94a3b8;"></small></div>
+        <div class="arena-grid">
+            <div class="exercise-btn" id="btn-pullups">עליות מתח <input type="number" id="in-pullups" placeholder="0" oninput="checkExercise('pullups')"></div>
+            <div class="exercise-btn" id="btn-pushups">שכיבות סמיכה <input type="number" id="in-pushups" placeholder="0" oninput="checkExercise('pushups')"></div>
+            <div class="exercise-btn" id="btn-dips">מקבילים <input type="number" id="in-dips" placeholder="0" oninput="checkExercise('dips')"></div>
+        </div>
+        <button class="exercise-btn" style="margin-top:40px; background:#334155; border:none;" onclick="closeArena()">יציאה (ללא סיום)</button>
+    </div>
 
-    <div id="timerModal">
-        <div class="modal-content">
-            <div id="timerDisplay" class="timer-display">00:00</div>
-            <div id="timerOptions">
-                <button class="modal-btn" onclick="startTimer(120)">2 דק' פלאנק</button>
-                <button class="modal-btn" onclick="startTimer(1200)">20 דק' אימון</button>
+    <div id="calendarModal" class="full-modal" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);">
+        <div style="max-width: 400px; margin: auto; width: 100%;">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size:20px;">▶</button>
+                <h2 id="calendarTitle"></h2>
+                <button onclick="changeMonth(1)" style="background:none; border:none; color:white; font-size:20px;">◀</button>
             </div>
-            <button id="stopBtn" class="modal-btn" style="display:none; background:var(--accent);" onclick="stopTimer()">עצור</button>
-            <button class="modal-btn" style="background:#334155;" onclick="closeTimer()">סגור</button>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <button class="exercise-btn" style="margin-top:30px;" onclick="document.getElementById('calendarModal').style.display='none'">סגור</button>
         </div>
     </div>
+
+    <audio id="meditationAudio" src="meditation.mp3.mp3" preload="auto"></audio>
 
     <script>
         const START_DATE = new Date("2026-03-05");
         const TOTAL_DAYS = 75;
-        const quotes = ["המשמעת היא החופש.", "אל תפסיק כשקשה.", "תהיה חזק מהתירוץ שלך."];
-        
         const dailyBasics = ["🧘 מדיטציה", "❄️ מקלחת קרה", "✍️ כתיבה 5+ דק'", "📖 קריאה 5+ דק'", "Plank ⏱️"];
         const train = {0:"💪 פלג גוף עליון", 1:"💪 חיזוקים + ליבה", 2:"💪 פלג גוף תחת", 3:"💪 פלג גוף עליון", 4:"💪 חיזוקים + ליבה", 5:"💪 חיזוקים מיוחדים", 6:"🧘‍♂️ מתיחות 20 דק'"};
-        const runs = {0:"🏃‍♂️ ריצה 45 דק'", 1:"🏃‍♂️ נורווגית", 3:"🏃‍♂️ ריצה 45 דק'", 4:"🏃‍♂️ ספרינטים"};
+        const runs = {0:"🏃‍♂️ ריצה 45 דק'", 1:"🏃‍♂️ נורווגית", 3:"🏃‍♂️ ריצה 45 דק'", 4:"🏃‍♂️ ספרינטים", 5:"🏃‍♂️ ריצה ארוכה (8+ ק\"מ)"};
 
         let streak = parseInt(localStorage.getItem('nl_streak')) || 0;
         let completedTasks = JSON.parse(localStorage.getItem('nl_completedTasks')) || [];
-        const audio = document.getElementById('meditationAudio');
+        let history = JSON.parse(localStorage.getItem('nl_history')) || {};
+        let arenaInterval;
+        let arenaSets = 0;
+        let currentMonth = new Date();
 
         function init() {
             const today = new Date();
+            const dateKey = today.toLocaleDateString('en-GB');
             document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            const diffDays = Math.max(0, Math.ceil((today - START_DATE) / 86400000));
-            const p = Math.min(100, Math.round((diffDays/TOTAL_DAYS)*100));
-            document.getElementById('progressFill').style.width = p + "%";
-            document.getElementById('percentLabel').innerText = p + "% מהאתגר עבר";
-            document.getElementById('dailyQuote').innerText = `"${quotes[today.getDate() % quotes.length]}"`;
-            
-            if (localStorage.getItem('nl_lastDate') !== today.toLocaleDateString()) {
+            if (localStorage.getItem('nl_lastDate') !== dateKey) {
+                // שמירת היסטוריה לפני איפוס
+                if(localStorage.getItem('nl_lastDate')) {
+                    saveToHistory(localStorage.getItem('nl_lastDate'), completedTasks);
+                }
                 completedTasks = [];
                 localStorage.setItem('nl_completedTasks', JSON.stringify([]));
-                localStorage.setItem('nl_lastDate', today.toLocaleDateString());
+                localStorage.setItem('nl_lastDate', dateKey);
             }
-
-            audio.onended = () => {
-                if (!completedTasks.includes("🧘 מדיטציה")) toggle("🧘 מדיטציה");
-            };
             render();
+        }
+
+        function saveToHistory(date, tasks) {
+            const day = (new Date(date.split('/').reverse().join('-'))).getDay();
+            const totalTasks = dailyBasics.length + (day !== 6 ? 2 : 1) + (runs[day] ? 1 : 0);
+            history[date] = { done: tasks.length, total: totalTasks };
+            localStorage.setItem('nl_history', JSON.stringify(history));
         }
 
         function render() {
@@ -131,53 +131,30 @@
             if (runs[day]) tasks.push(runs[day]);
 
             const list = document.getElementById('taskList');
-            list.innerHTML = ""; // ניקוי הרשימה
-
-            tasks.forEach(t => {
+            list.innerHTML = tasks.map(t => {
                 const isDone = completedTasks.includes(t);
                 const isMed = t.includes("מדיטציה");
-                
-                const taskDiv = document.createElement('div');
-                taskDiv.className = `task ${isDone ? 'done' : ''}`;
-                
-                // הפיכת כל השורה ללחיצה
-                taskDiv.onclick = () => toggle(t);
-
-                taskDiv.innerHTML = `
+                return `
+                <div class="task ${isDone ? 'done' : ''}" onclick="taskClick('${t}')">
                     <div style="display:flex; align-items:center; flex:1">
                         <span style="font-weight:500; font-size:17px;">${t}</span>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        ${isMed && !isDone ? `<button id="pBtn" class="play-btn">▶</button>` : ''}
+                        ${isMed && !isDone ? `<button class="play-btn" onclick="event.stopPropagation(); playMed()">▶</button>` : ''}
                         <span style="font-size:24px; margin-right:15px;">${isDone ? '✅' : '⬜'}</span>
                     </div>
-                `;
-
-                // טיפול בכפתור פליי בנפרד כדי שלא יתנגש עם הלחיצה על השורה
-                if (isMed && !isDone) {
-                    const btn = taskDiv.querySelector('#pBtn');
-                    btn.onclick = (e) => {
-                        e.stopPropagation(); // מונע מהשורה להסתמן כ-V כשלוחצים פליי
-                        playMed();
-                    };
-                }
-
-                list.appendChild(taskDiv);
-            });
-
+                </div>`;
+            }).join('');
             document.getElementById('streakDisplay').innerText = streak;
+            const p = Math.min(100, Math.round(((new Date() - START_DATE) / 86400000 / TOTAL_DAYS) * 100));
+            document.getElementById('progressFill').style.width = p + "%";
         }
 
-        function playMed() {
-            const btn = document.getElementById('pBtn');
-            if (audio.paused) {
-                audio.play();
-                btn.innerText = "⏸";
-                btn.classList.add('playing');
+        function taskClick(name) {
+            if (name === "💪 פלג גוף עליון" && !completedTasks.includes(name)) {
+                openArena();
             } else {
-                audio.pause();
-                btn.innerText = "▶";
-                btn.classList.remove('playing');
+                toggle(name);
             }
         }
 
@@ -186,37 +163,112 @@
             if (idx === -1) completedTasks.push(name);
             else completedTasks.splice(idx, 1);
             localStorage.setItem('nl_completedTasks', JSON.stringify(completedTasks));
+            saveToHistory(new Date().toLocaleDateString('en-GB'), completedTasks);
             render();
             checkWin();
         }
 
-        function checkWin() {
-            const day = new Date().getDay();
-            const todayStr = new Date().toLocaleDateString();
-            const req = dailyBasics.length + 1 + (day !== 6 ? 1 : 0) + (runs[day] ? 1 : 0);
-            if (completedTasks.length === req && localStorage.getItem('nl_win_' + todayStr) !== "y") {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                streak++;
-                localStorage.setItem('nl_streak', streak);
-                localStorage.setItem('nl_win_' + todayStr, "y");
-                setTimeout(() => { render(); alert("יום מושלם! 🔥"); }, 500);
+        // לוגיקת זירת כוח
+        function openArena() {
+            document.getElementById('strengthArena').style.display = 'flex';
+            const prev = localStorage.getItem('nl_upperBest') || 0;
+            document.getElementById('prevBest').innerText = `אימון קודם: ${prev} סטים`;
+            arenaSets = 0;
+            updateArenaUI();
+            startArenaTimer(1200);
+        }
+
+        function startArenaTimer(seconds) {
+            let timeLeft = seconds;
+            arenaInterval = setInterval(() => {
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+                document.getElementById('arenaTimer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (timeLeft <= 0) {
+                    clearInterval(arenaInterval);
+                    localStorage.setItem('nl_upperBest', arenaSets);
+                    document.getElementById('strengthArena').style.display = 'none';
+                    toggle("💪 פלג גוף עליון");
+                    alert("הזמן נגמר! אימון הושלם 🔥");
+                }
+            }, 1000);
+        }
+
+        function checkExercise(type) {
+            const val = document.getElementById('in-' + type).value;
+            if (val > 0) document.getElementById('btn-' + type).classList.add('complete');
+            
+            const p = document.getElementById('btn-pullups').classList.contains('complete');
+            const s = document.getElementById('btn-pushups').classList.contains('complete');
+            const d = document.getElementById('btn-dips').classList.contains('complete');
+
+            if (p && s && d) {
+                arenaSets++;
+                updateArenaUI();
+                // איפוס סטים
+                ['pullups', 'pushups', 'dips'].forEach(id => {
+                    document.getElementById('in-' + id).value = '';
+                    document.getElementById('btn-' + id).classList.remove('complete');
+                });
+                confetti({ particleCount: 50, spread: 30, origin: { y: 0.5 } });
             }
         }
 
-        function openTimer() { document.getElementById('timerModal').style.display = 'flex'; }
-        function closeTimer() { document.getElementById('timerModal').style.display = 'none'; }
-        function startTimer(s) {
-            document.getElementById('timerOptions').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'block';
-            let timeLeft = s;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                let m = Math.floor(timeLeft / 60), sc = timeLeft % 60;
-                document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`;
-                if (timeLeft <= 0) { clearInterval(timerInterval); alert("הזמן נגמר!"); stopTimer(); }
-            }, 1000);
+        function updateArenaUI() { document.getElementById('currentSets').innerText = arenaSets; }
+        function closeArena() { clearInterval(arenaInterval); document.getElementById('strengthArena').style.display = 'none'; }
+
+        // לוגיקת לוח שנה
+        function openCalendar() {
+            document.getElementById('calendarModal').style.display = 'flex';
+            drawCalendar();
         }
-        function stopTimer() { clearInterval(timerInterval); document.getElementById('timerOptions').style.display = 'block'; document.getElementById('stopBtn').style.display = 'none'; document.getElementById('timerDisplay').innerText = "00:00"; }
+
+        function drawCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const title = document.getElementById('calendarTitle');
+            grid.innerHTML = "";
+            const month = currentMonth.getMonth();
+            const year = currentMonth.getFullYear();
+            title.innerText = currentMonth.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${d < 10 ? '0' : ''}${d}/${month + 1 < 10 ? '0' : ''}${month + 1}/${year}`;
+                const data = history[dateStr];
+                let statusClass = "";
+                if (data) {
+                    if (data.done === 0) statusClass = "day-failed";
+                    else if (data.done < data.total) statusClass = "day-partial";
+                    else statusClass = "day-perfect";
+                }
+                grid.innerHTML += `<div class="calendar-day ${statusClass}">${d}</div>`;
+            }
+        }
+
+        function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() + dir); drawCalendar(); }
+
+        // פונקציות עזר קודמות
+        function playMed() {
+            const audio = document.getElementById('meditationAudio');
+            if (audio.paused) audio.play(); else audio.pause();
+        }
+
+        function checkWin() {
+            const todayStr = new Date().toLocaleDateString('en-GB');
+            const day = new Date().getDay();
+            const req = dailyBasics.length + (day !== 6 ? 2 : 1) + (runs[day] ? 1 : 0);
+            if (completedTasks.length === req && localStorage.getItem('nl_win_' + todayStr) !== "y") {
+                confetti({ particleCount: 150, spread: 70 });
+                streak++;
+                localStorage.setItem('nl_streak', streak);
+                localStorage.setItem('nl_win_' + todayStr, "y");
+                render();
+            }
+        }
 
         init();
     </script>

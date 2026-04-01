@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>New Life - Elite Pro</title>
+    <title>New Life - Elite Pro v2</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6; --success: #10b981; --accent: #ff4b2b; --warning: #f59e0b; }
@@ -16,32 +16,31 @@
         .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin-bottom: 15px; border: 1px solid #334155; position: relative; }
         .date-display { font-size: 13px; color: #94a3b8; font-weight: 600; }
         .streak-num { font-size: 55px; font-weight: 900; color: var(--accent); margin: 5px 0; }
-
         .progress-bg { background: #334155; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 15px; }
         .progress-fill { background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; transition: width 0.5s ease; width: 0%; }
         
-        .task { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; transition: 0.2s; cursor: pointer; }
+        .task { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; cursor: pointer; }
         .task.done { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
         .task.done span { text-decoration: line-through; color: var(--success); opacity: 0.6; }
 
-        /* Arena Style */
         .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .arena-timer { font-size: 60px; font-weight: bold; color: var(--accent); text-align: center; margin: 40px 0 10px; font-variant-numeric: tabular-nums; }
-        .sets-counter { font-size: 24px; text-align: center; margin-bottom: 30px; color: var(--primary); }
-        .arena-grid { display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .exercise-btn { width: 100%; max-width: 300px; background: #334155; border: 2px solid #475569; padding: 25px; border-radius: 20px; color: white; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; position: relative; }
+        .arena-timer { font-size: 65px; font-weight: bold; color: var(--accent); text-align: center; margin: 30px 0 5px; }
+        .sets-counter { font-size: 24px; text-align: center; margin-bottom: 20px; color: var(--primary); }
+        
+        .exercise-btn { width: 100%; max-width: 320px; background: #334155; border: 2px solid #475569; padding: 22px; border-radius: 20px; color: white; font-size: 19px; font-weight: bold; cursor: pointer; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .exercise-btn.complete { background: var(--success); border-color: #059669; }
-        .exercise-btn input { position: absolute; right: 15px; width: 50px; background: rgba(0,0,0,0.3); border: none; color: white; text-align: center; border-radius: 5px; font-size: 18px; }
+        .exercise-btn input { width: 60px; background: rgba(0,0,0,0.4); border: 1px solid #475569; color: white; text-align: center; border-radius: 8px; font-size: 20px; padding: 5px; outline: none; }
 
-        /* Calendar Style */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; }
-        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; font-weight: bold; border: 1px solid #334155; }
+        #summaryPage { text-align: center; }
+        .sum-val { font-size: 28px; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .sum-label { font-size: 16px; color: #94a3b8; }
+        .sum-prev { font-size: 14px; color: #64748b; margin-right: 8px; }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; direction: ltr; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; border: 1px solid #334155; }
         .day-perfect { border: 2px solid var(--success); color: var(--success); }
         .day-partial { border: 2px solid var(--warning); color: var(--warning); }
         .day-failed { border: 2px solid var(--accent); color: var(--accent); }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-
-        .play-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-left: 12px; }
     </style>
 </head>
 <body>
@@ -61,33 +60,54 @@
     <div id="taskList"></div>
 
     <div id="strengthArena" class="full-modal">
-        <div class="arena-timer" id="arenaTimer">20:00</div>
-        <div class="sets-counter">סטים שבוצעו: <span id="currentSets">0</span> <br> <small id="prevBest" style="color:#94a3b8;"></small></div>
-        <div class="arena-grid">
-            <div class="exercise-btn" id="btn-pullups">עליות מתח <input type="number" id="in-pullups" placeholder="0" oninput="checkExercise('pullups')"></div>
-            <div class="exercise-btn" id="btn-pushups">שכיבות סמיכה <input type="number" id="in-pushups" placeholder="0" oninput="checkExercise('pushups')"></div>
-            <div class="exercise-btn" id="btn-dips">מקבילים <input type="number" id="in-dips" placeholder="0" oninput="checkExercise('dips')"></div>
+        <div id="arenaActive">
+            <div class="arena-timer" id="arenaTimer">20:00</div>
+            <div class="sets-counter">סטים: <span id="currentSets">0</span> <br> <small id="prevBest" style="color:#64748b;"></small></div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div class="exercise-btn" id="btn-pullups"><span>עליות מתח</span> <input type="number" id="in-pullups" oninput="checkEx('pullups')"></div>
+                <div class="exercise-btn" id="btn-pushups"><span>שכיבות סמיכה</span> <input type="number" id="in-pushups" oninput="checkEx('pushups')"></div>
+                <div class="exercise-btn" id="btn-dips"><span>מקבילים</span> <input type="number" id="in-dips" oninput="checkEx('dips')"></div>
+            </div>
+            <button class="exercise-btn" style="margin:20px auto; background:#334155; border:none;" onclick="closeArena()">יציאה</button>
         </div>
-        <button class="exercise-btn" style="margin-top:40px; background:#334155; border:none;" onclick="closeArena()">יציאה (ללא סיום)</button>
+
+        <div id="summaryPage" style="display:none;">
+            <h1 style="color:var(--accent); font-size:50px; margin-bottom:10px;">20:00</h1>
+            <p class="sum-label">סטים שבוצעו באימון הנוכחי</p>
+            <div class="sum-val" style="font-size:45px;">- <span id="sumSets">0</span> -</div>
+            <p id="sumPrevSets" style="color:#64748b; margin-bottom:30px;"></p>
+            
+            <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #334155; display:inline-block; width:90%;">
+                <div style="margin-bottom:15px;">
+                    <span class="sum-label">עליות מתח:</span> <span class="sum-val" id="total-pullups">0</span> <span class="sum-prev" id="prev-pullups"></span>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <span class="sum-label">שכיבות סמיכה:</span> <span class="sum-val" id="total-pushups">0</span> <span class="sum-prev" id="prev-pushups"></span>
+                </div>
+                <div>
+                    <span class="sum-label">מקבילים:</span> <span class="sum-val" id="total-dips">0</span> <span class="sum-prev" id="prev-dips"></span>
+                </div>
+            </div>
+            <button class="exercise-btn" style="margin:30px auto; background:var(--success);" onclick="finishWorkout()">סיום וחזרה</button>
+        </div>
     </div>
 
-    <div id="calendarModal" class="full-modal" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);">
-        <div style="max-width: 400px; margin: auto; width: 100%;">
-            <div class="calendar-header">
-                <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size:20px;">▶</button>
+    <div id="calendarModal" class="full-modal">
+        <div style="max-width:400px; margin:auto; width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button onclick="changeMonth(-1)" style="color:white; background:none; border:none; font-size:24px;">▶</button>
                 <h2 id="calendarTitle"></h2>
-                <button onclick="changeMonth(1)" style="background:none; border:none; color:white; font-size:20px;">◀</button>
+                <button onclick="changeMonth(1)" style="color:white; background:none; border:none; font-size:24px;">◀</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            <button class="exercise-btn" style="margin-top:30px;" onclick="document.getElementById('calendarModal').style.display='none'">סגור</button>
+            <button class="exercise-btn" style="margin-top:30px; background:#334155;" onclick="document.getElementById('calendarModal').style.display='none'">סגור</button>
         </div>
     </div>
 
-    <audio id="meditationAudio" src="meditation.mp3.mp3" preload="auto"></audio>
+    <audio id="meditationAudio" src="meditation.mp3.mp3"></audio>
 
     <script>
         const START_DATE = new Date("2026-03-05");
-        const TOTAL_DAYS = 75;
         const dailyBasics = ["🧘 מדיטציה", "❄️ מקלחת קרה", "✍️ כתיבה 5+ דק'", "📖 קריאה 5+ דק'", "Plank ⏱️"];
         const train = {0:"💪 פלג גוף עליון", 1:"💪 חיזוקים + ליבה", 2:"💪 פלג גוף תחת", 3:"💪 פלג גוף עליון", 4:"💪 חיזוקים + ליבה", 5:"💪 חיזוקים מיוחדים", 6:"🧘‍♂️ מתיחות 20 דק'"};
         const runs = {0:"🏃‍♂️ ריצה 45 דק'", 1:"🏃‍♂️ נורווגית", 3:"🏃‍♂️ ריצה 45 דק'", 4:"🏃‍♂️ ספרינטים", 5:"🏃‍♂️ ריצה ארוכה (8+ ק\"מ)"};
@@ -95,32 +115,18 @@
         let streak = parseInt(localStorage.getItem('nl_streak')) || 0;
         let completedTasks = JSON.parse(localStorage.getItem('nl_completedTasks')) || [];
         let history = JSON.parse(localStorage.getItem('nl_history')) || {};
-        let arenaInterval;
-        let arenaSets = 0;
+        let arenaInterval, arenaSets = 0;
+        let totals = { pullups: 0, pushups: 0, dips: 0 };
         let currentMonth = new Date();
 
         function init() {
-            const today = new Date();
-            const dateKey = today.toLocaleDateString('en-GB');
-            document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
-            
+            const dateKey = new Date().toLocaleDateString('en-GB');
             if (localStorage.getItem('nl_lastDate') !== dateKey) {
-                // שמירת היסטוריה לפני איפוס
-                if(localStorage.getItem('nl_lastDate')) {
-                    saveToHistory(localStorage.getItem('nl_lastDate'), completedTasks);
-                }
                 completedTasks = [];
-                localStorage.setItem('nl_completedTasks', JSON.stringify([]));
+                localStorage.setItem('nl_completedTasks', "[]");
                 localStorage.setItem('nl_lastDate', dateKey);
             }
             render();
-        }
-
-        function saveToHistory(date, tasks) {
-            const day = (new Date(date.split('/').reverse().join('-'))).getDay();
-            const totalTasks = dailyBasics.length + (day !== 6 ? 2 : 1) + (runs[day] ? 1 : 0);
-            history[date] = { done: tasks.length, total: totalTasks };
-            localStorage.setItem('nl_history', JSON.stringify(history));
         }
 
         function render() {
@@ -130,145 +136,126 @@
             tasks.push(train[day]);
             if (runs[day]) tasks.push(runs[day]);
 
-            const list = document.getElementById('taskList');
-            list.innerHTML = tasks.map(t => {
+            document.getElementById('taskList').innerHTML = tasks.map(t => {
                 const isDone = completedTasks.includes(t);
-                const isMed = t.includes("מדיטציה");
-                return `
-                <div class="task ${isDone ? 'done' : ''}" onclick="taskClick('${t}')">
-                    <div style="display:flex; align-items:center; flex:1">
-                        <span style="font-weight:500; font-size:17px;">${t}</span>
-                    </div>
-                    <div style="display:flex; align-items:center;">
-                        ${isMed && !isDone ? `<button class="play-btn" onclick="event.stopPropagation(); playMed()">▶</button>` : ''}
-                        <span style="font-size:24px; margin-right:15px;">${isDone ? '✅' : '⬜'}</span>
-                    </div>
+                return `<div class="task ${isDone ? 'done' : ''}" onclick="taskClick('${t}')">
+                    <span>${t}</span>
+                    <span>${isDone ? '✅' : '⬜'}</span>
                 </div>`;
             }).join('');
             document.getElementById('streakDisplay').innerText = streak;
-            const p = Math.min(100, Math.round(((new Date() - START_DATE) / 86400000 / TOTAL_DAYS) * 100));
-            document.getElementById('progressFill').style.width = p + "%";
+            document.getElementById('progressFill').style.width = Math.min(100, Math.round(((new Date() - START_DATE)/86400000/75)*100)) + "%";
         }
 
         function taskClick(name) {
-            if (name === "💪 פלג גוף עליון" && !completedTasks.includes(name)) {
-                openArena();
-            } else {
-                toggle(name);
-            }
+            if (name === "💪 פלג גוף עליון" && !completedTasks.includes(name)) openArena();
+            else toggle(name);
         }
 
         function toggle(name) {
             const idx = completedTasks.indexOf(name);
-            if (idx === -1) completedTasks.push(name);
-            else completedTasks.splice(idx, 1);
+            if (idx === -1) completedTasks.push(name); else completedTasks.splice(idx, 1);
             localStorage.setItem('nl_completedTasks', JSON.stringify(completedTasks));
-            saveToHistory(new Date().toLocaleDateString('en-GB'), completedTasks);
-            render();
-            checkWin();
+            saveToHistory(); render(); checkWin();
         }
 
-        // לוגיקת זירת כוח
         function openArena() {
             document.getElementById('strengthArena').style.display = 'flex';
-            const prev = localStorage.getItem('nl_upperBest') || 0;
-            document.getElementById('prevBest').innerText = `אימון קודם: ${prev} סטים`;
-            arenaSets = 0;
-            updateArenaUI();
+            document.getElementById('arenaActive').style.display = 'block';
+            document.getElementById('summaryPage').style.display = 'none';
+            arenaSets = 0; totals = { pullups: 0, pushups: 0, dips: 0 };
+            document.getElementById('currentSets').innerText = "0";
+            const prevBest = JSON.parse(localStorage.getItem('nl_last_upper')) || {sets:0, pullups:0, pushups:0, dips:0};
+            document.getElementById('prevBest').innerText = `אימון קודם: ${prevBest.sets} סטים`;
             startArenaTimer(1200);
         }
 
-        function startArenaTimer(seconds) {
-            let timeLeft = seconds;
+        function startArenaTimer(sec) {
+            let timeLeft = sec;
             arenaInterval = setInterval(() => {
                 timeLeft--;
                 let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
                 document.getElementById('arenaTimer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                if (timeLeft <= 0) {
-                    clearInterval(arenaInterval);
-                    localStorage.setItem('nl_upperBest', arenaSets);
-                    document.getElementById('strengthArena').style.display = 'none';
-                    toggle("💪 פלג גוף עליון");
-                    alert("הזמן נגמר! אימון הושלם 🔥");
-                }
+                if (timeLeft <= 0) showSummary();
             }, 1000);
         }
 
-        function checkExercise(type) {
-            const val = document.getElementById('in-' + type).value;
-            if (val > 0) document.getElementById('btn-' + type).classList.add('complete');
+        function checkEx(type) {
+            const input = document.getElementById('in-' + type);
+            if (input.value > 0) document.getElementById('btn-' + type).classList.add('complete');
             
             const p = document.getElementById('btn-pullups').classList.contains('complete');
             const s = document.getElementById('btn-pushups').classList.contains('complete');
             const d = document.getElementById('btn-dips').classList.contains('complete');
 
             if (p && s && d) {
-                arenaSets++;
-                updateArenaUI();
-                // איפוס סטים
-                ['pullups', 'pushups', 'dips'].forEach(id => {
-                    document.getElementById('in-' + id).value = '';
-                    document.getElementById('btn-' + id).classList.remove('complete');
-                });
-                confetti({ particleCount: 50, spread: 30, origin: { y: 0.5 } });
+                // השהיה של 5 שניות לפני איפוס הסט
+                setTimeout(() => {
+                    totals.pullups += parseInt(document.getElementById('in-pullups').value || 0);
+                    totals.pushups += parseInt(document.getElementById('in-pushups').value || 0);
+                    totals.dips += parseInt(document.getElementById('in-dips').value || 0);
+                    arenaSets++;
+                    document.getElementById('currentSets').innerText = arenaSets;
+                    ['pullups', 'pushups', 'dips'].forEach(id => {
+                        document.getElementById('in-' + id).value = '';
+                        document.getElementById('btn-' + id).classList.remove('complete');
+                    });
+                    confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+                }, 5000);
             }
         }
 
-        function updateArenaUI() { document.getElementById('currentSets').innerText = arenaSets; }
-        function closeArena() { clearInterval(arenaInterval); document.getElementById('strengthArena').style.display = 'none'; }
-
-        // לוגיקת לוח שנה
-        function openCalendar() {
-            document.getElementById('calendarModal').style.display = 'flex';
-            drawCalendar();
+        function showSummary() {
+            clearInterval(arenaInterval);
+            confetti({ particleCount: 300, spread: 100 });
+            document.getElementById('arenaActive').style.display = 'none';
+            document.getElementById('summaryPage').style.display = 'block';
+            document.getElementById('sumSets').innerText = arenaSets;
+            
+            const prev = JSON.parse(localStorage.getItem('nl_last_upper')) || {sets:0, pullups:0, pushups:0, dips:0};
+            document.getElementById('sumPrevSets').innerText = `אימון קודם: ${prev.sets} סטים`;
+            
+            ['pullups', 'pushups', 'dips'].forEach(id => {
+                document.getElementById('total-' + id).innerText = totals[id];
+                document.getElementById('prev-' + id).innerText = `(קודם: ${prev[id] || 0})`;
+            });
         }
 
+        function finishWorkout() {
+            localStorage.setItem('nl_last_upper', JSON.stringify({sets: arenaSets, ...totals}));
+            document.getElementById('strengthArena').style.display = 'none';
+            toggle("💪 פלג גוף עליון");
+        }
+
+        function saveToHistory() {
+            const date = new Date().toLocaleDateString('en-GB');
+            history[date] = { done: completedTasks.length, total: document.querySelectorAll('.task').length };
+            localStorage.setItem('nl_history', JSON.stringify(history));
+        }
+
+        function openCalendar() { document.getElementById('calendarModal').style.display = 'flex'; drawCalendar(); }
         function drawCalendar() {
             const grid = document.getElementById('calendarGrid');
-            const title = document.getElementById('calendarTitle');
             grid.innerHTML = "";
-            const month = currentMonth.getMonth();
-            const year = currentMonth.getFullYear();
-            title.innerText = currentMonth.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-            
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${d < 10 ? '0' : ''}${d}/${month + 1 < 10 ? '0' : ''}${month + 1}/${year}`;
-                const data = history[dateStr];
-                let statusClass = "";
-                if (data) {
-                    if (data.done === 0) statusClass = "day-failed";
-                    else if (data.done < data.total) statusClass = "day-partial";
-                    else statusClass = "day-perfect";
-                }
-                grid.innerHTML += `<div class="calendar-day ${statusClass}">${d}</div>`;
+            const m = currentMonth.getMonth(), y = currentMonth.getFullYear();
+            document.getElementById('calendarTitle').innerText = currentMonth.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
+            const first = new Date(y, m, 1).getDay(), days = new Date(y, m+1, 0).getDate();
+            for (let i = 0; i < first; i++) grid.innerHTML += `<div></div>`;
+            for (let d = 1; d <= days; d++) {
+                const date = `${d < 10 ? '0' : ''}${d}/${m + 1 < 10 ? '0' : ''}${m + 1}/${y}`;
+                const h = history[date], cls = h ? (h.done === 0 ? "day-failed" : (h.done < h.total ? "day-partial" : "day-perfect")) : "";
+                grid.innerHTML += `<div class="calendar-day ${cls}">${d}</div>`;
             }
         }
-
-        function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() + dir); drawCalendar(); }
-
-        // פונקציות עזר קודמות
-        function playMed() {
-            const audio = document.getElementById('meditationAudio');
-            if (audio.paused) audio.play(); else audio.pause();
-        }
-
+        function changeMonth(n) { currentMonth.setMonth(currentMonth.getMonth() + n); drawCalendar(); }
         function checkWin() {
-            const todayStr = new Date().toLocaleDateString('en-GB');
-            const day = new Date().getDay();
-            const req = dailyBasics.length + (day !== 6 ? 2 : 1) + (runs[day] ? 1 : 0);
-            if (completedTasks.length === req && localStorage.getItem('nl_win_' + todayStr) !== "y") {
-                confetti({ particleCount: 150, spread: 70 });
-                streak++;
-                localStorage.setItem('nl_streak', streak);
-                localStorage.setItem('nl_win_' + todayStr, "y");
-                render();
+            const today = new Date().toLocaleDateString('en-GB');
+            if (completedTasks.length >= 7 && localStorage.getItem('nl_win_'+today) !== "y") {
+                streak++; localStorage.setItem('nl_streak', streak); localStorage.setItem('nl_win_'+today, "y");
+                confetti({ particleCount: 200, spread: 80 }); render();
             }
         }
+        function openTimer() { alert("הטיימר הכללי זמין כעת דרך זירת האימון או הפלאנק."); }
 
         init();
     </script>

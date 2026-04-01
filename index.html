@@ -4,37 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>New Life - Elite Pro v3</title>
+    <title>New Life - Elite Pro v4</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --primary: #3b82f6; --success: #10b981; --accent: #ff4b2b; --warning: #f59e0b; }
-        body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 15px; color: var(--text); user-select: none; text-align: right; }
         
-        /* תיקון לחיצה על כפתורי עליון */
-        .header-btns { position: absolute; top: 20px; left: 20px; display: flex; gap: 12px; z-index: 9999; }
-        .icon-btn { background: var(--card); padding: 12px; border-radius: 50%; border: 1px solid #334155; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto; }
+        /* הגדרות בסיס למניעת חסימות לחיצה */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); margin: 0; padding: 15px; color: var(--text); user-select: none; text-align: right; overflow-x: hidden; }
+        
+        /* כפתורי עליון - מיקום מדויק */
+        .header-btns { position: relative; display: flex; justify-content: flex-start; gap: 12px; margin-bottom: 10px; z-index: 10; padding-top: 10px; }
+        .icon-btn { background: var(--card); padding: 12px; border-radius: 50%; border: 1px solid #334155; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; }
 
-        .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin-bottom: 20px; border: 1px solid #334155; position: relative; margin-top: 50px; }
+        .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin-bottom: 20px; border: 1px solid #334155; position: relative; z-index: 5; }
         .streak-num { font-size: 55px; font-weight: 900; color: var(--accent); margin: 5px 0; }
         .progress-bg { background: #334155; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 15px; }
         .progress-fill { background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; transition: width 0.5s ease; width: 0%; }
         
-        .task { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        /* המשימות - עכשיו עם Z-INDEX גבוה כדי שיהיו לחיצות תמיד */
+        #taskList { position: relative; z-index: 10; }
+        .task { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; cursor: pointer; transition: transform 0.1s; position: relative; }
+        .task:active { transform: scale(0.98); background: #2d3a4f; }
         .task.done { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
         .task.done span { text-decoration: line-through; color: var(--success); opacity: 0.6; }
 
-        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 10000; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: center; }
+        /* מודלים - DISPLAY NONE כברירת מחדל כדי שלא יחסמו כלום */
+        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: center; }
+        
         .arena-timer { font-size: 65px; font-weight: bold; color: var(--accent); margin: 40px 0 10px; }
         .sets-counter { font-size: 24px; color: var(--primary); margin-bottom: 25px; }
         
-        .exercise-btn { width: 100%; max-width: 320px; background: #334155; border: 2px solid #475569; padding: 22px; border-radius: 20px; color: white; font-size: 19px; font-weight: bold; margin: 0 auto 15px; display: flex; justify-content: space-between; align-items: center; }
+        .exercise-btn { width: 100%; max-width: 320px; background: #334155; border: 2px solid #475569; padding: 22px; border-radius: 20px; color: white; font-size: 19px; font-weight: bold; margin: 0 auto 15px; display: flex; justify-content: space-between; align-items: center; position: relative; }
         .exercise-btn.complete { background: var(--success); border-color: #059669; }
-        .exercise-btn input { width: 65px; background: rgba(0,0,0,0.5); border: 1px solid #475569; color: white; text-align: center; border-radius: 8px; font-size: 22px; padding: 8px 0; outline: none; }
-
-        #summaryPage h1 { color: var(--accent); font-size: 60px; margin: 20px 0; }
-        .sum-row { margin: 15px 0; font-size: 18px; }
-        .sum-val { color: var(--primary); font-weight: bold; font-size: 22px; }
-        .sum-prev { color: #64748b; font-size: 14px; margin-right: 10px; }
+        .exercise-btn input { width: 70px; background: rgba(0,0,0,0.5); border: 1px solid #475569; color: white; text-align: center; border-radius: 8px; font-size: 22px; padding: 8px 0; outline: none; }
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 20px; direction: ltr; }
         .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 14px; border: 1px solid #334155; }
@@ -66,20 +69,20 @@
             <div class="exercise-btn" id="btn-pullups"><span>עליות מתח</span> <input type="number" id="in-pullups" placeholder="0" onblur="checkEx()"></div>
             <div class="exercise-btn" id="btn-pushups"><span>שכיבות סמיכה</span> <input type="number" id="in-pushups" placeholder="0" onblur="checkEx()"></div>
             <div class="exercise-btn" id="btn-dips"><span>מקבילים</span> <input type="number" id="in-dips" placeholder="0" onblur="checkEx()"></div>
-            <button class="exercise-btn" style="margin-top:30px; background:#334155; border:none; justify-content:center;" onclick="closeArena()">יציאה</button>
+            <button class="exercise-btn" style="margin-top:30px; background:#334155; border:none; justify-content:center;" onclick="closeArena()">יציאה מהאימון</button>
         </div>
 
         <div id="summaryPage" style="display:none;">
-            <h1>20:00</h1>
+            <h1 style="font-size:60px; color:var(--accent); margin:20px 0;">20:00</h1>
             <p style="color:#94a3b8">סטים שבוצעו באימון הנוכחי</p>
-            <div style="font-size:50px; color:var(--primary); font-weight:900; margin:10px 0;">- <span id="sumSets">0</span> -</div>
+            <div style="font-size:55px; color:var(--primary); font-weight:900; margin:10px 0;">- <span id="sumSets">0</span> -</div>
             <p id="sumPrevSets" style="color:#64748b; margin-bottom:30px;"></p>
-            <div style="background:var(--card); padding:25px; border-radius:24px; border:1px solid #475569; display:inline-block; width:100%; max-width:320px;">
-                <div class="sum-row">מתח: <span class="sum-val" id="total-pullups">0</span> <span class="sum-prev" id="prev-pullups"></span></div>
-                <div class="sum-row">שכיבות סמיכה: <span class="sum-val" id="total-pushups">0</span> <span class="sum-prev" id="prev-pushups"></span></div>
-                <div class="sum-row">מקבילים: <span class="sum-val" id="total-dips">0</span> <span class="sum-prev" id="prev-dips"></span></div>
+            <div style="background:var(--card); padding:25px; border-radius:24px; border:1px solid #475569; display:inline-block; width:100%; max-width:320px; text-align:right;">
+                <div style="margin:10px 0;">עליות מתח: <span style="color:var(--primary); font-weight:bold;" id="total-pullups">0</span> <span style="color:#64748b; font-size:13px; margin-right:10px;" id="prev-pullups"></span></div>
+                <div style="margin:10px 0;">שכיבות סמיכה: <span style="color:var(--primary); font-weight:bold;" id="total-pushups">0</span> <span style="color:#64748b; font-size:13px; margin-right:10px;" id="prev-pushups"></span></div>
+                <div style="margin:10px 0;">מקבילים: <span style="color:var(--primary); font-weight:bold;" id="total-dips">0</span> <span style="color:#64748b; font-size:13px; margin-right:10px;" id="prev-dips"></span></div>
             </div>
-            <button class="exercise-btn" style="margin-top:30px; background:var(--success); justify-content:center;" onclick="finishWorkout()">סיום וחזרה</button>
+            <button class="exercise-btn" style="margin-top:30px; background:var(--success); justify-content:center;" onclick="finishWorkout()">סיום ושמירה</button>
         </div>
     </div>
 
@@ -91,7 +94,7 @@
                 <button onclick="changeMonth(1)" style="color:white; background:none; border:none; font-size:30px;">◀</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            <button class="exercise-btn" style="margin-top:40px; background:#334155; border:none; justify-content:center;" onclick="document.getElementById('calendarModal').style.display='none'">סגור</button>
+            <button class="exercise-btn" style="margin-top:40px; background:#334155; border:none; justify-content:center;" onclick="closeCalendar()">סגור לוח שנה</button>
         </div>
     </div>
 
@@ -112,6 +115,7 @@
             const today = new Date();
             const dateKey = today.toLocaleDateString('en-GB');
             document.getElementById('currentDate').innerText = today.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+            
             if (localStorage.getItem('nl_lastDate') !== dateKey) {
                 completedTasks = [];
                 localStorage.setItem('nl_completedTasks', "[]");
@@ -127,27 +131,37 @@
             tasks.push(train[day]);
             if (runs[day]) tasks.push(runs[day]);
 
-            document.getElementById('taskList').innerHTML = tasks.map(t => {
+            const listDiv = document.getElementById('taskList');
+            listDiv.innerHTML = "";
+            
+            tasks.forEach(t => {
                 const isDone = completedTasks.includes(t);
-                return `<div class="task ${isDone ? 'done' : ''}" onclick="taskClick('${t}')">
-                    <span style="font-size:18px; font-weight:600;">${t}</span>
-                    <span style="font-size:24px;">${isDone ? '✅' : '⬜'}</span>
-                </div>`;
-            }).join('');
+                const div = document.createElement('div');
+                div.className = `task ${isDone ? 'done' : ''}`;
+                div.innerHTML = `<span>${t}</span><span>${isDone ? '✅' : '⬜'}</span>`;
+                div.onclick = () => taskClick(t);
+                listDiv.appendChild(div);
+            });
+
             document.getElementById('streakDisplay').innerText = streak;
             document.getElementById('progressFill').style.width = Math.min(100, Math.round(((new Date() - START_DATE)/86400000/75)*100)) + "%";
         }
 
         function taskClick(name) {
-            if (name === "💪 פלג גוף עליון" && !completedTasks.includes(name)) openArena();
-            else toggle(name);
+            if (name === "💪 פלג גוף עליון" && !completedTasks.includes(name)) {
+                openArena();
+            } else {
+                toggle(name);
+            }
         }
 
         function toggle(name) {
             const idx = completedTasks.indexOf(name);
             if (idx === -1) completedTasks.push(name); else completedTasks.splice(idx, 1);
             localStorage.setItem('nl_completedTasks', JSON.stringify(completedTasks));
-            saveToHistory(); render(); checkWin();
+            saveToHistory(); 
+            render(); 
+            checkWin();
         }
 
         function openArena() {
@@ -172,9 +186,9 @@
 
         function checkEx() {
             if (isLock) return;
-            const pVal = document.getElementById('in-pullups').value;
-            const sVal = document.getElementById('in-pushups').value;
-            const dVal = document.getElementById('in-dips').value;
+            const pVal = parseInt(document.getElementById('in-pullups').value) || 0;
+            const sVal = parseInt(document.getElementById('in-pushups').value) || 0;
+            const dVal = parseInt(document.getElementById('in-dips').value) || 0;
 
             if (pVal > 0) document.getElementById('btn-pullups').classList.add('complete');
             if (sVal > 0) document.getElementById('btn-pushups').classList.add('complete');
@@ -183,9 +197,9 @@
             if (pVal > 0 && sVal > 0 && dVal > 0) {
                 isLock = true;
                 setTimeout(() => {
-                    totals.pullups += parseInt(document.getElementById('in-pullups').value || 0);
-                    totals.pushups += parseInt(document.getElementById('in-pushups').value || 0);
-                    totals.dips += parseInt(document.getElementById('in-dips').value || 0);
+                    totals.pullups += parseInt(document.getElementById('in-pullups').value);
+                    totals.pushups += parseInt(document.getElementById('in-pushups').value);
+                    totals.dips += parseInt(document.getElementById('in-dips').value);
                     arenaSets++;
                     document.getElementById('currentSets').innerText = arenaSets;
                     ['pullups', 'pushups', 'dips'].forEach(id => {
@@ -205,10 +219,12 @@
             document.getElementById('sumSets').innerText = arenaSets;
             const prev = JSON.parse(localStorage.getItem('nl_last_upper')) || {sets:0, pullups:0, pushups:0, dips:0};
             document.getElementById('sumPrevSets').innerText = `אימון קודם: ${prev.sets} סטים`;
-            ['pullups', 'pushups', 'dips'].forEach(id => {
-                document.getElementById('total-' + id).innerText = totals[id];
-                document.getElementById('prev-' + id).innerText = `(קודם: ${prev[id] || 0})`;
-            });
+            document.getElementById('total-pullups').innerText = totals.pullups;
+            document.getElementById('prev-pullups').innerText = `(קודם: ${prev.pullups || 0})`;
+            document.getElementById('total-pushups').innerText = totals.pushups;
+            document.getElementById('prev-pushups').innerText = `(קודם: ${prev.pushups || 0})`;
+            document.getElementById('total-dips').innerText = totals.dips;
+            document.getElementById('prev-dips').innerText = `(קודם: ${prev.dips || 0})`;
             confetti({ particleCount: 200, spread: 90 });
         }
 
@@ -220,12 +236,13 @@
 
         function saveToHistory() {
             const date = new Date().toLocaleDateString('en-GB');
-            const tasksOnPage = document.querySelectorAll('.task').length;
-            history[date] = { done: completedTasks.length, total: tasksOnPage };
+            history[date] = { done: completedTasks.length, total: 7 }; // מספר ממוצע של משימות
             localStorage.setItem('nl_history', JSON.stringify(history));
         }
 
         function openCalendar() { document.getElementById('calendarModal').style.display = 'flex'; drawCalendar(); }
+        function closeCalendar() { document.getElementById('calendarModal').style.display = 'none'; }
+        
         function drawCalendar() {
             const grid = document.getElementById('calendarGrid'); grid.innerHTML = "";
             const m = currentMonth.getMonth(), y = currentMonth.getFullYear();
@@ -240,15 +257,16 @@
             }
         }
         function changeMonth(n) { currentMonth.setMonth(currentMonth.getMonth() + n); drawCalendar(); }
+        
         function checkWin() {
             const today = new Date().toLocaleDateString('en-GB');
-            const req = document.querySelectorAll('.task').length;
-            if (completedTasks.length === req && localStorage.getItem('nl_win_'+today) !== "y") {
+            if (completedTasks.length >= 7 && localStorage.getItem('nl_win_'+today) !== "y") {
                 streak++; localStorage.setItem('nl_streak', streak); localStorage.setItem('nl_win_'+today, "y");
-                confetti({ particleCount: 150, spread: 70 }); render();
+                confetti({ particleCount: 150, spread: 70 }); 
+                render();
             }
         }
-        function openTimer() { alert("הטיימר ל-20 דק' יופעל אוטומטית כשתתחיל אימון כוח פלג גוף עליון."); }
+        function openTimer() { alert("הטיימר יופעל בזמן אימון כוח."); }
         init();
     </script>
 </body>
